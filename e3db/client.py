@@ -11,6 +11,12 @@ import requests
 import shutil
 import hashlib
 
+# wormhole
+import wormhole
+import random
+import os
+import subprocess
+from datetime import datetime
 
 class Client:
     """
@@ -891,7 +897,7 @@ class Client:
         Requires a Search object to perform the Query. Construction and Execution is as follows:
 
         search_this = Search().Match(records=[some_params,...]).Exclude(writers=[omit_this,...])
-        search_result = client.search(search_this) 
+        search_result = client.search(search_this)
 
         For more information see the documentation of the Search Object or Tests.
 
@@ -899,7 +905,7 @@ class Client:
         ----------
         query : Search
             Object that contains the information to search for.
-        
+
         Returns
         -------
         SearchResult
@@ -921,12 +927,12 @@ class Client:
     def __search(self, query):
         """
         Private Method to send search request to E3DB and return a json response.
-        
+
         Parameters
         ----------
         query: Search
             Search object represents the query made to the E3DB.
-        
+
         Returns
         -------
         dict
@@ -953,7 +959,7 @@ class Client:
 
         include_data: bool
             Flag to indicate if data is included in the response, taken from the Query.
-        
+
         Returns
         ----------
         [Records]
@@ -1002,7 +1008,7 @@ class Client:
         ak = self.__get_access_key(self.client_id, self.client_id, self.client_id, record_type)
         if ak is None:
             ak = Crypto.random_key()
-            self.__put_access_key(self.client_id, self.client_id, self.client_id, record_type, ak) # Give yourself the ak 
+            self.__put_access_key(self.client_id, self.client_id, self.client_id, record_type, ak) # Give yourself the ak
         self.__put_access_key(self.client_id, self.client_id, reader_id, record_type, ak)
 
         allow_read = {
@@ -1403,3 +1409,161 @@ class Client:
             version=response_json['meta']['version'],
             plain=response_json['meta']['plain']
         )
+
+    def write_p2p(self, plaintext_filename, receiver_id):
+
+        # client.send_p2p(record_type, 'plaintext_filename', receiver_id)
+            # internally does heavy lifting
+            # creates access key
+            # encrypts files using access key, stores encrypted file locally
+            # shares access key with receiver_id
+            # writes special record type "toz.p2p.{0}".format(client.client_id), uses AK same as file
+            # wormhole code written in record_type
+            # shares special record type with receiver_id
+            # starts wormhole sender server
+            # loops until connection is made with proper wormhole code
+            # sends encrypted file over wormhole
+            # closes connection
+            # TODO have timeout for sending files?
+
+        # 50 char limit
+        record_type = "toz.p2p.{0}".format(Crypto.encode_private_key(Crypto.random_key())[:16].decode('utf-8'))
+        print("Record type: {0}".format(record_type))
+
+        # Get EAK for this record_type, for my client id
+        ak = self.__get_access_key(str(self.client_id), str(self.client_id), str(self.client_id), record_type)
+        if ak is None:
+            ak = Crypto.random_key()
+            self.__put_access_key(str(self.client_id), str(self.client_id), str(self.client_id), record_type, ak)
+
+        print("encrypting file: {0}".format(plaintext_filename))
+        encrypted_filename, file_checksum, file_size = Crypto.encrypt_file(plaintext_filename, ak)
+        print("file encrypted: {0}".format(encrypted_filename))
+
+        # The invitation code uses the same format either way: channel-ID, a hyphen, and an arbitrary string.
+        # using crypto methods to just get some random bytes
+        rand = Crypto.encode_private_key(Crypto.random_key())[:16]
+        wormhole_code = "{0}-{1}-{2}".format(random.randint(0,1000), self.api_url, rand.decode('UTF-8'))
+        print("wormhole-code: {0}".format(wormhole_code))
+        data = {
+            'wormhole-code': wormhole_code,
+            'filename': plaintext_filename,
+            'encrypted-filename': encrypted_filename
+        }
+        wormhole_record = self.write(record_type, data)
+        print("Wrote record id: {0} with wormhole code information.".format(wormhole_record.meta.record_id))
+        self.share(record_type, receiver_id)
+        print("Sharing record type {0} with client {1}".format(record_type, receiver_id))
+        # wormhole send --code 11234-dev.e3db.com-test README.md
+        # start wormhole server
+        # uses default wormhole developer relay server
+
+        #w = wormhole.create(appid, relay_url, reactor, delegate=MyDelegate())
+        #w.allocate_code()
+        #w.set_code(wormhole_code)
+        #w.dilate()
+        #w.send_message(msg)
+        #w.close()
+
+        print("Attempting to send file {0}...".format(encrypted_filename))
+        proc = subprocess.Popen(["wormhole", "send", "--code", wormhole_code, encrypted_filename], stdout=subprocess.PIPE)
+
+        # wait for the process to return
+        com = proc.communicate()[0]
+        # read cert in from file
+        if proc.returncode == 0:
+          # made cert hopefully *crosses fingers*
+          print("INFO: seems to have run with exit code 0")
+        else:
+          print("INFO: certbot -- an error occurred during cert creation. "
+                "Non-zero Status code ({})".format(proc.returncode))
+        # print(stdout from subprocess)
+        print(com)
+
+        # docker run -it --rm --entrypoint=sh -v "$HOME/.tozny/p2p-sender:/root/.tozny/" tozny/e3db-python
+        # python sender.py
+
+        # cleanup
+        # TODO
+        # delete record type
+        # delete records
+        # unshare?
+
+
+    def read_p2p(self, sender_client_id=None):
+        # client.recv_p2p(sender_client_id)
+            # sender_client_id optional, could just browser for all shared files
+            # checks for new shared records of type "toz.p2p.*" or "toz.p2p.{0}".format(sender_client_id)
+            # fetches records, decrypts, holds onto access key used on record
+            # gets magicwormhole code
+            # initiates download from magicwormhole source
+            # stores encrypted file locally
+            # decrypts encrypted file with stored access key
+            # writes plaintext file to disk
+
+        # docker run -it --rm --entrypoint=sh -v "$HOME/.tozny/p2p-sender:/root/.tozny/" tozny/e3db-python
+        # python sender.py
+
+        # record_type = "toz.p2p.{0}/{1}".format(self.client_id, receiver_id)
+        # need to go from incoming_sharing to record_id of record with that type
+
+        # TODO use search v2
+        found = {}
+
+        for policy in self.incoming_sharing():
+            print("{0} {1}".format(policy.writer_id, policy.record_type))
+            if sender_client_id:
+                if policy.writer_id == sender_client_id and "toz.p2p." in policy.record_type:
+                    found[str(policy.writer_id)] = policy.record_type
+            else:
+                # no sender client id, so we get generic matches
+                if "toz.p2p." in policy.record_type:
+                    found[str(policy.writer_id)] = policy.record_type
+
+        # TODO this is fragile
+        record = None
+        # hacky, like super hacky. this is just to find a recent written record to try to discover
+        # what the latest wormhole is. #HAX
+        for writer_id, record_type in found.items():
+            query_result = self.query(writer=[writer_id], record_type=[record_type])
+            for r in query_result:
+                delta = datetime.now() - r.meta.created
+                seconds_ago = delta.seconds
+                if seconds_ago < 120:
+                    # if record was written in last 120 seconds, this is probably the wormhole we are looking for
+                    record = r #grab first record, FRAGILE
+                    break
+
+        print("Record: {0}, Record_type: {1}".format(record.meta.record_id, record.meta.record_type))
+        wormhole_code = record.data['wormhole-code']
+        plaintext_filename = record.data['filename']
+        encrypted_filename = record.data['encrypted-filename']
+
+        print("receiving {0}, filename: {1}, wh-code: {2}".format(encrypted_filename, plaintext_filename, wormhole_code))
+        # after we read record, the aK will be in cache, then we can fetch from there
+        ak = self.__get_access_key(record.meta.writer_id, record.meta.writer_id, self.client_id, record.meta.record_type)
+
+        #### MAGIC WORMHOLE #######
+        print("Attempting to RECV file {0}...".format(plaintext_filename))
+        proc = subprocess.Popen(["wormhole", "receive", wormhole_code, "--hide-progress", "--accept-file"], stdout=subprocess.PIPE)
+        # wormhole receive 11234-dev.e3db.com-test --hide-progress --accept-file
+
+        # wait for the process to return
+        com = proc.communicate()[0]
+        # read cert in from file
+        if proc.returncode == 0:
+          # made cert hopefully *crosses fingers*
+          print("INFO: seems to have run with exit code 0")
+        else:
+          print("INFO: certbot -- an error occurred during cert creation. "
+                "Non-zero Status code ({})".format(proc.returncode))
+        # print(stdout from subprocess)
+        print(com)
+        # TODO parse filename from this
+
+        print("using AK: {0}".format(ak))
+        ### DECRYPTTTTTT #####
+
+        Crypto.decrypt_file(encrypted_filename, plaintext_filename, ak)
+
+        return plaintext_filename
