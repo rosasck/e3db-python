@@ -1458,6 +1458,8 @@ class Client:
         # start wormhole server
         # uses default wormhole developer relay server
 
+        # Due to lack of time the wormhole cli was used instead of using the python API
+
         #w = wormhole.create(appid, relay_url, reactor, delegate=MyDelegate())
         #w.allocate_code()
         #w.set_code(wormhole_code)
@@ -1466,6 +1468,8 @@ class Client:
         #w.close()
 
         print("Attempting to send file {0}...".format(encrypted_filename))
+        # TODO note that shelling out leaves code execution issues, THIS IS JUST A DEMO DO NOT ACTUALLY DO THIS
+        # for example someone could say wormhole-code = "test; rm -rf *;" and popen would run the rm command, not Good!
         proc = subprocess.Popen(["wormhole", "send", "--code", wormhole_code, encrypted_filename], stdout=subprocess.PIPE)
 
         # wait for the process to return
@@ -1488,6 +1492,7 @@ class Client:
         # delete record type
         # delete records
         # unshare?
+        os.remove(encrypted_filename)
 
 
     def read_p2p(self, sender_client_id=None):
@@ -1511,7 +1516,6 @@ class Client:
         found = {}
 
         for policy in self.incoming_sharing():
-            print("{0} {1}".format(policy.writer_id, policy.record_type))
             if sender_client_id:
                 if policy.writer_id == sender_client_id and "toz.p2p." in policy.record_type:
                     found[str(policy.writer_id)] = policy.record_type
@@ -1545,6 +1549,8 @@ class Client:
 
         #### MAGIC WORMHOLE #######
         print("Attempting to RECV file {0}...".format(plaintext_filename))
+        # TODO note that shelling out leaves code execution issues, THIS IS JUST A DEMO DO NOT ACTUALLY DO THIS
+        # for example someone could say wormhole-code = "test; rm -rf *;" and popen would run the rm command, not Good!
         proc = subprocess.Popen(["wormhole", "receive", wormhole_code, "--hide-progress", "--accept-file"], stdout=subprocess.PIPE)
         # wormhole receive 11234-dev.e3db.com-test --hide-progress --accept-file
 
@@ -1561,9 +1567,8 @@ class Client:
         print(com)
         # TODO parse filename from this
 
-        print("using AK: {0}".format(ak))
         ### DECRYPTTTTTT #####
-
         Crypto.decrypt_file(encrypted_filename, plaintext_filename, ak)
+        os.remove(encrypted_filename)
 
         return plaintext_filename
