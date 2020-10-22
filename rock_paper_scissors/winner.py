@@ -10,10 +10,6 @@ from e3db.types import Search
 if len(sys.argv) != 3 :
     sys.exit("Incorrect Arguments:\n python3 winner.py [round] [client-credentials]")
 
-
-#Look up up bruces results from round and output who won 
-
-
 file = open(sys.argv[2], "r")
 
 client_json = json.loads(file.read())
@@ -27,20 +23,20 @@ else :
     sys.exit("Permisions not valid")
 
 
-credentials_path= sys.argv[2]
+credentials_path= "./clarence_cred.json"
 if os.path.exists(credentials_path):
     client = e3db.Client(json.load(open(credentials_path)))
-
-
 
 file.close
 
 round= sys.argv[1]
 
-query= Search(include_data=True).match(record_types=['rps_winner'])
+query= Search(include_data=True).match( record_types=['rps_winner'] )
 results = client.search(query)
+winner= 'NA'
 
 for record in results:
-    full_name = "Winner Name: {0} ".format(record.data['name'])
-    print ("{0} --- Round: {1}".format(full_name, record.data['round']))
+    if record.data['round'] == round:
+        winner= record.data['name']
 
+print("{0} is the winner for round {1}".format(winner, round))

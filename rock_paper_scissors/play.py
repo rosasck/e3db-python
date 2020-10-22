@@ -3,16 +3,17 @@ import e3db
 import sys
 import json
 import os 
-
-
 #python3 play.py round=1 name=alicia move=rock tozny-client-credentials-filepath=./alicia_creds.json
 
+
+
+
+# Argument Counter Check, Making sure user is passing in 
 if len(sys.argv) != 5 :
     sys.exit("Incorrect Arguments:\n python3 play.py [round] [name] [move] [client-credentials]")
 
 #check if move is rock, paper, or scissors
 
-move = str(sys.argv[3])
 
 
 if (sys.argv[3] == 'rock') or (sys.argv[3] == 'paper') or (sys.argv[3] == 'scissors') :
@@ -21,6 +22,7 @@ else:
     sys.exit("You must submit a move from the following list: rock, paper, scissors")
 
 
+move = str(sys.argv[3])
 
 file = open(sys.argv[4], "r")
 
