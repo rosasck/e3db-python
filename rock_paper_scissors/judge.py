@@ -63,6 +63,9 @@ round= sys.argv[1]
 
 
 #query to grab all the moves made by alicia and bruce 
+#query should be able to be, but ir doesnt work! 
+#query= Search(include_data=True).match(record_types=['rps_move'], values=[round])
+
 query= Search(include_data=True).match(record_types=['rps_move'])
 results = client.search(query)   #stores Alicias records thaat the query found 
 results2= client2.search(query)  #stores Bruces records that the query found
@@ -79,7 +82,7 @@ alice_play="null"
 for record in results:
     if record.data['round'] == round:
         if str(record.data['name']).lower() == 'alicia':
-           alice_play= record.data['move']
+            alice_play= record.data['move']
 
 
 #This for loop goes through all the results pulled from Bruces's records
