@@ -153,6 +153,7 @@ elif(alice_play == 'scissors' and bruce_play == 'scissors'):
     }
 else:  #catch all for any wierdness
     print("Invalid or Incomplete Data")
+    sys.exit("Not enough data to complete")
 
 
 
