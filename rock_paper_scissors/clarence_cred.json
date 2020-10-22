@@ -1,4 +1,11 @@
 {
     "name" : "Clarence",
-    "token": "4dbaec7e778fa0cf0aa1b0dbf964273e70307c53afce0e6f92abac52edf57ced"
+    "token": "4dbaec7e778fa0cf0aa1b0dbf964273e70307c53afce0e6f92abac52edf57ced",
+    "client_id":"a06e2162-ce38-4cd2-a63e-6837bbbe4c1a",
+    "api_key_id":"e007deac15ab7ed6b1e5e7e49b1e339409434afbedca9a055ac72d70f7a288a7",
+    "api_secret":"1112a2077d5b53b038f64c8f0db471ed5eff1d38d3ef463aa1db8f470ea0703d",
+    "public_key":"Mh42JBREjCIHNn1Nt0rMgpahWRRAYv291nYaElPwe00",
+    "private_key": "doHNPujl6Q0VDACmr-FM-Oi_48gm6fIj1genzjfuDTg",
+    "api_url": "https://api.e3db.com",
+    "client_email" : ""
 }

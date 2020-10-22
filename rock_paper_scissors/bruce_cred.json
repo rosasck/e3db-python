@@ -1,4 +1,11 @@
 {
     "name" : "Bruce",
-    "token": "705f3ac4e14032c55f4c22237fc1cc890e83440799d5013eae9ccb4c018a987f"
+    "token": "705f3ac4e14032c55f4c22237fc1cc890e83440799d5013eae9ccb4c018a987f",
+    "client_id":"cdfd094b-b73d-460f-9c5e-b24411883aa0",
+    "api_key_id":"cf898c19de3f118df099682300c85cbeb8ea90c186d4b51e7c65f1191228ec94",
+    "api_secret":"c30daae17ba55d63e4991d574868ea65d3c3b3b8a39157049c72307017ca9a33",
+    "public_key":"Hp_c3dfEZhlzmR3uWZm8pQEAPB1DFvamXMc1P-USdkE",
+    "private_key": "E5eEQ2IQ7foASzNEr7vRCIAmU2pmpvShiaubDGgO3go",
+    "api_url": "https://api.e3db.com",
+    "client_email" : ""
 }
