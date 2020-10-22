@@ -5,38 +5,66 @@ import os
 import json
 from e3db.types import Search
 
+#Example command line arguments given by Levi:
 # $ python3 winner.py round=1 tozny-client-credentials-filepath=./bruce_creds.json
 
+
+
+# Argument Counter Check, Making sure user is passing in all needed arguments 
 if len(sys.argv) != 3 :
     sys.exit("Incorrect Arguments:\n python3 winner.py [round] [client-credentials]")
 
+
+
+#File opening to grab user's name 
 file = open(sys.argv[2], "r")
 
 client_json = json.loads(file.read())
 
 client_name=client_json["name"]
 
-if client_name == 'Alicia' or client_name == 'alicia' or client_name == 'Clarence' or client_name == 'clarence' or client_name == 'Bruce' or client_name == 'bruce'  :
+#File closing
+file.close
+
+
+#Checking the user can acces this functionality 
+#Based off of Levi's specifications
+#TODO: find if E3DB can indeed grant record reading permission to other clients 
+if str(client_name).lower() == 'alicia' or str(client_name).lower() == 'clarence' or str(client_name).lower() == 'bruce'  :
     print("Verified Permissions")
 else :
-    print(sys.argv[2])
     sys.exit("Permisions not valid")
 
 
+#Credential paths needed for this operation
+# Needed clarences records to see who he judged to be the winnner
 credentials_path= "./clarence_cred.json"
 if os.path.exists(credentials_path):
     client = e3db.Client(json.load(open(credentials_path)))
 
-file.close
 
+#Storing round variable passed in for futher use 
+#not necssary but more readable
 round= sys.argv[1]
 
-query= Search(include_data=True).match( record_types=['rps_winner'] )
-results = client.search(query)
-winner= 'NA'
 
+#TODO: figure out how to use the value in the query to filter by round in query 
+# query to go through the round winners 
+query= Search(include_data=True).match( record_types=['rps_winner'] )
+results = client.search(query) #stores the results 
+
+#Setting to empty to be filled with winner or trrigger the exception of 
+#round hasnt happened yet
+winner= ""
+
+#go through the results, store the latest result for the round
+#to display 
 for record in results:
     if record.data['round'] == round:
         winner= record.data['name']
 
-print("{0} is the winner for round {1}".format(winner, round))
+#check if there is a winner or else give error 
+if bool(winner):
+    print("{0} is the winner for round {1}".format(winner, round))
+else:
+    print("Round has not occured yet, Check back soon")
