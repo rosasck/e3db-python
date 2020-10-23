@@ -8,13 +8,9 @@ import os
 #python3 play.py round=1 name=alicia move=rock tozny-client-credentials-filepath=./alicia_creds.json
 
 
-
-
 # Argument Counter Check, Making sure user is passing in all needed arguments 
 if len(sys.argv) != 5 :
     sys.exit("Incorrect Arguments:\n python3 play.py [round] [name] [move] [client-credentials]")
-
-
 
 # Double Checking that the game moves are only able to be rock paper or scissors 
 if ((sys.argv[3]).lower() == 'rock') or ((sys.argv[3]).lower() == 'paper') or ((sys.argv[3]).lower() == 'scissors') :
@@ -22,13 +18,8 @@ if ((sys.argv[3]).lower() == 'rock') or ((sys.argv[3]).lower() == 'paper') or ((
 else:
     sys.exit("You must submit a move from the following list: rock, paper, scissors")
 
-
-
 #Save the valid move to an argument for further use 
 move = str(sys.argv[3]).lower()
-
-
-
 
 file = open(sys.argv[4], "r") #This opens the file that is passed in with the credentials 
 
@@ -52,9 +43,6 @@ if os.path.exists(credentials_path):
     client = e3db.Client(json.load(open(credentials_path)))
 
 
-
-
-
 #Create record to store in E3DB, holding the name of the user, the round they are playing for
 # and the move they are playing
 record_type = 'rps_move'
@@ -64,6 +52,12 @@ data = {
     'move': move,
 }
 
+
+#This allows the records being created to be shared with the judge for him
+#to judge
+clarence_client_id= "a06e2162-ce38-4cd2-a63e-6837bbbe4c1a"
+client.revoke(record_type, clarence_client_id)
+client.share(record_type, clarence_client_id)
 
 #CODE TAKEN FORM READ.ME
 #To write the record to the E3DB 

@@ -8,8 +8,6 @@ from e3db.types import Search
 #Example command line arguments given by Levi:
 # $ python3 winner.py round=1 tozny-client-credentials-filepath=./bruce_creds.json
 
-
-
 # Argument Counter Check, Making sure user is passing in all needed arguments 
 if len(sys.argv) != 3 :
     sys.exit("Incorrect Arguments:\n python3 winner.py [round] [client-credentials]")
@@ -38,9 +36,7 @@ else :
 
 #Credential paths needed for this operation
 # Needed clarences records to see who he judged to be the winnner
-#credentials_path= "./clarence_cred.json"
 credentials_path= sys.argv[2]
-
 if os.path.exists(credentials_path):
     client = e3db.Client(json.load(open(credentials_path)))
 
@@ -50,9 +46,8 @@ if os.path.exists(credentials_path):
 round= sys.argv[1]
 
 
-#TODO: figure out how to use the value in the query to filter by round in query 
 # query to go through the round winners 
-query= Search(include_data=True).match( record_types=['rps_winner'] )
+query= Search(include_data=True, include_all_writers= True).match( record_types=['rps_winner'] )
 results = client.search(query) #stores the results 
 
 #Setting to empty to be filled with winner or trrigger the exception of 

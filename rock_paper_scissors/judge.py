@@ -25,9 +25,6 @@ client_name=client_json["name"]
 file.close
 #Closing file 
 
-
-
-
 #Checking the user can acces this functionality 
 #Based off of Levi's specifications
 #TODO: find if E3DB can indeed grant record reading permission to other clients 
@@ -36,26 +33,16 @@ if (client_name).lower() == 'alicia' or (client_name).lower() == 'clarence' :
 else :
     sys.exit("Permisions not valid")
 
-
-
 #Credential paths needed for this operation
 #we wil need to check alicias and bruces records, and then store the judgement record
 # on clarences records 
-#TODO: find a way to grant read access to other users from records
-credentials_path= './alice_cred.json'
-credentials_path2= './bruce_cred.json'
-credentials_path3= './clarence_cred.json'
+credentials_path= sys.argv[2]
 
 
 #Opening all credential paths and assigining to a specific client 
 if os.path.exists(credentials_path):
     client = e3db.Client(json.load(open(credentials_path)))
 
-if os.path.exists(credentials_path2):
-    client2 = e3db.Client(json.load(open(credentials_path2)))
-
-if os.path.exists(credentials_path3):
-    client3 = e3db.Client(json.load(open(credentials_path3)))
 
 #Storing round variable passed in for futher use 
 #not necssary but more readable 
@@ -64,11 +51,9 @@ round= sys.argv[1]
 
 #query to grab all the moves made by alicia and bruce 
 #query should be able to be, but ir doesnt work! 
-#query= Search(include_data=True).match(record_types=['rps_move'], values=[round])
 
-query= Search(include_data=True).match(record_types=['rps_move'])
-results = client.search(query)   #stores Alicias records thaat the query found 
-results2= client2.search(query)  #stores Bruces records that the query found
+query= Search(include_data=True,include_all_writers= True).match(record_types=['rps_move'])
+results = client.search(query)    
 
 #Incase bruce  or alice never submitted a play for the round, needed to be caught at 
 #the end exception
@@ -83,18 +68,8 @@ for record in results:
     if record.data['round'] == round:
         if str(record.data['name']).lower() == 'alicia':
             alice_play= record.data['move']
-
-
-#This for loop goes through all the results pulled from Bruces's records
-#then filters by round
-#TODO: find out how to use the query value to filter by round needed
-# take the last entry incase bruce enters more than one
-for record in results2:
-    if record.data['round'] == round:
         if str(record.data['name']).lower() == 'bruce': 
-           bruce_play= record.data['move']
-
-
+            bruce_play= record.data['move']
 
 
 
@@ -162,36 +137,30 @@ else:  #catch all for any wierdness
 
 alicia_client_id="62ec5390-fef9-4003-a61f-617f51b2ceff"
 bruces_client_id="cdfd094b-b73d-460f-9c5e-b24411883aa0"
-
+clarence_client_id= "a06e2162-ce38-4cd2-a63e-6837bbbe4c1a"
 
 record_type= 'rps_winner'
-client3.revoke(record_type, alicia_client_id)
-client3.revoke(record_type, bruces_client_id)
 
-client3.share(record_type, alicia_client_id)
-client3.share(record_type, bruces_client_id)
+if(client_name.lower() == 'alicia') :
+    record_type= 'rps_winner'
+    client.revoke(record_type, clarence_client_id)
+    client.share(record_type, clarence_client_id)
+    client.revoke(record_type, bruces_client_id)
+    client.share(record_type, bruces_client_id)
+
+if(client_name.lower() == 'clarence'):
+    record_type= 'rps_winner'
+    client.revoke(record_type, alicia_client_id)
+    client.revoke(record_type, bruces_client_id)
+    client.share(record_type, alicia_client_id)
+    client.share(record_type, bruces_client_id)
 
 
-client.ak_cache={}
 
 #Bruce's record writting to E3DB
-record = client3.write(record_type, data)
+record = client.write(record_type, data)
 print ('Wrote record ID {0}'.format(record.meta.record_id))
 
-#client.read(record.meta.record_id)
-
-
 # Read that record back from the server and print the name
-record2 = client3.read(record.meta.record_id)
+record2 = client.read(record.meta.record_id)
 print ('Round "{0}" '.format(record2.data['round']), ' Winner {0} Submitted!'.format(record2.data['name']))
-
-'''
-alicia_client_id="62ec5390-fef9-4003-a61f-617f51b2ceff"
-bruces_client_id="cdfd094b-b73d-460f-9c5e-b24411883aa0"
-
-
-record_type= 'rps_winner'
-client3.share(record_type, alicia_client_id)
-client3.share(record_type, bruces_client_id)
-
-'''
