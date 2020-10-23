@@ -167,13 +167,18 @@ bruces_client_id="cdfd094b-b73d-460f-9c5e-b24411883aa0"
 record_type= 'rps_winner'
 client3.revoke(record_type, alicia_client_id)
 client3.revoke(record_type, bruces_client_id)
+
 client3.share(record_type, alicia_client_id)
 client3.share(record_type, bruces_client_id)
 
 
+client.ak_cache={}
+
 #Bruce's record writting to E3DB
 record = client3.write(record_type, data)
 print ('Wrote record ID {0}'.format(record.meta.record_id))
+
+#client.read(record.meta.record_id)
 
 
 # Read that record back from the server and print the name

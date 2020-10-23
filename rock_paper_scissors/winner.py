@@ -62,7 +62,7 @@ winner= ""
 #go through the results, store the latest result for the round
 #to display 
 for record in results:
-    if record.data['round'] == round:
+    if str(record.data['round']) == str(round):
         winner= record.data['name']
 
 #check if there is a winner or else give error 
