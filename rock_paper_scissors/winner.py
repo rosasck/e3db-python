@@ -38,7 +38,9 @@ else :
 
 #Credential paths needed for this operation
 # Needed clarences records to see who he judged to be the winnner
-credentials_path= "./clarence_cred.json"
+#credentials_path= "./clarence_cred.json"
+credentials_path= sys.argv[2]
+
 if os.path.exists(credentials_path):
     client = e3db.Client(json.load(open(credentials_path)))
 

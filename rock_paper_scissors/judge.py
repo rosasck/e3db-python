@@ -159,6 +159,16 @@ else:  #catch all for any wierdness
     sys.exit("Not enough data to complete")
 
 
+'''
+alicia_client_id="62ec5390-fef9-4003-a61f-617f51b2ceff"
+bruces_client_id="cdfd094b-b73d-460f-9c5e-b24411883aa0"
+
+
+record_type= 'rps_winner'
+client3.share(record_type, alicia_client_id)
+client3.share(record_type, bruces_client_id)
+'''
+
 
 #Bruce's record writting to E3DB
 record = client3.write(record_type, data)
@@ -168,3 +178,14 @@ print ('Wrote record ID {0}'.format(record.meta.record_id))
 # Read that record back from the server and print the name
 record2 = client3.read(record.meta.record_id)
 print ('Round "{0}" '.format(record2.data['round']), ' Winner {0} Submitted!'.format(record2.data['name']))
+
+'''
+alicia_client_id="62ec5390-fef9-4003-a61f-617f51b2ceff"
+bruces_client_id="cdfd094b-b73d-460f-9c5e-b24411883aa0"
+
+
+record_type= 'rps_winner'
+client3.share(record_type, alicia_client_id)
+client3.share(record_type, bruces_client_id)
+
+'''
