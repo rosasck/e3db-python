@@ -159,15 +159,16 @@ else:  #catch all for any wierdness
     sys.exit("Not enough data to complete")
 
 
-'''
+
 alicia_client_id="62ec5390-fef9-4003-a61f-617f51b2ceff"
 bruces_client_id="cdfd094b-b73d-460f-9c5e-b24411883aa0"
 
 
 record_type= 'rps_winner'
+client3.revoke(record_type, alicia_client_id)
+client3.revoke(record_type, bruces_client_id)
 client3.share(record_type, alicia_client_id)
 client3.share(record_type, bruces_client_id)
-'''
 
 
 #Bruce's record writting to E3DB
